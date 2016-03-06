@@ -1,0 +1,563 @@
+#rm(list=ls(all=TRUE))
+
+
+SQ <- R6::R6Class(
+  "SQ",
+  inherit = fx_utils,
+
+  public = list(
+
+    params = NULL,        # query parameters
+    name = NULL,          # query name
+    qry_sql = NULL,    # stored query sql statement
+    qry_params = NULL, # stored query parameters
+
+
+    initialize = function(name , params) {
+      #set stored query name & parameters if supplied
+      if (!missing(name)) {
+        if (self$qry_exists(name)) {
+          self$name <- name
+        }else{
+          stop(paste0("Query ",name," does not exists"))
+        }
+      }
+      if (!missing(params)) {
+        self$params <- params
+      }
+
+
+
+      #load stored query if name is provided and there are no duplicates
+      temp <- private$qry_get()
+      if (!is.null(temp)) {
+        #str(temp)
+        if (nrow(temp == 1)) {
+          self$qry_sql <- temp$qry_sql
+          self$qry_params <- temp$qry_params
+        }
+      }
+    },
+
+    dbs_get_path = function(value) {
+      private$get_db()
+    },
+
+    dbs_get_current_paths = function() {
+
+      cat(paste0("Stored Queries DB = ",private$get_db() ))
+
+    },
+
+    #set name
+    qry_set_name = function(value) {
+      if (!missing(value)) {
+        if (self$qry_exists(value)) {
+          self$name <- value
+
+          temp <- private$qry_get()
+          if (!is.null(temp)) {
+            if (nrow(temp == 1)) {
+              self$qry_sql <- temp$qry_sql
+              self$qry_params <- temp$qry_params
+              invisible(self)
+            }else{
+              stop("Multiple queries with same name.")
+            }
+          }
+
+        }else{
+          stop(paste0("Query ",value," does not exists"))
+        }
+      }
+    },
+
+    #get query name
+    qry_get_name = function() {
+      return(self$name)
+    },
+
+    #set params
+    qry_set_params = function(value) {
+      if (!missing(value)) {
+        self$params <- value
+      }
+    },
+
+
+    qry_get_params = function() {
+      return(strsplit(self$qry_params,
+                      private$params_delimeter)[[1]])
+    },
+
+    #get stored
+    qry_get_sql = function() {
+      return(self$qry_sql)
+    },
+
+
+    qry_set_target_db = function(value) {
+      if (!missing(value)) {
+        self$target_db <- value
+      }
+      invisible(self)
+    },
+
+    qry_set_db_path = function(value) {
+      if (!missing(value)) {
+        self$qrys_db(value)
+      }
+      invisible(self)
+    },
+
+    qry_print_sql = function(value) {
+      if (missing(value)) {
+        cat(self$qry_get_sql())
+      }else{
+        myqry <-
+          paste0("select qry_sql from stored_queries where qry_name='",value,"'")
+        temp <- private$qry_run_self_sql(myqry)
+        if (nrow(temp) > 0) {
+          cat(temp$qry_sql)
+        }else{
+
+        }
+      }
+      invisible(self)
+    },
+
+    params_split = function(value) {
+      temp <- base::gsub(",","','",value)
+      temp <- base::paste0("('",temp,"')")
+      return(temp)
+    },
+
+    params_replace = function() {
+      self$qry_replace_params()
+    },
+
+    qry_replace_params = function() {
+      temp_sql <- self$qry_get_sql()
+
+      if (is.null(temp_sql) ||
+          is.na(temp_sql)) {
+        stop("No sql found")
+      }
+
+      p <- self$qry_get_params()
+      if (!is.na(p) || is.null(p)) {
+        for (i in 1:length(p)) {
+
+          #cat(p[i],"=")
+          #cat(self$params[[p[i]]],"\n")
+
+          if (stringr::str_detect(p[i],"@s_")) {
+            temp_sql <- stringr::str_replace(temp_sql,
+                                             p[i],
+                                             paste0("'",
+                                                    self$params[[p[i]]],
+                                                    "'")
+                                             )
+
+          }else if (stringr::str_detect(p[i],"@ls_")) {
+            temp_sql <- stringr::str_replace(temp_sql,
+                                             p[i],
+                                             self$params_split(self$params[[p[i]]])
+                                             )
+
+          }else if (stringr::str_detect(p[i],"@li_")) {
+            temp_sql <- stringr::str_replace(temp_sql,
+                                             p[i],
+                                             paste0("(",
+                                                    self$params[[p[i]]],
+                                                    ")")
+                                             )
+
+          }else{
+            temp_sql <-
+              stringr::str_replace(temp_sql, p[i], self$params[[p[i]]])
+          }
+        }
+      }
+
+      #multi-statement break into vector
+      #cat(temp_sql)
+      if (stringr::str_detect(temp_sql,";")) {
+        temp_sql <- gsub("[\r\n]","",strsplit(temp_sql,";")[[1]])
+      }
+
+      return(temp_sql)
+    },
+
+    qry_exec = function() {
+      temp <- self$qry_replace_params()
+      #cat(temp)
+      if (length(temp) == 1) {
+        return(private$qry_run_target_sql(temp))
+      }else{
+        ltemp <- sapply(temp, private$qry_run_target_sql)
+        return(ltemp)
+      }
+
+    },
+
+    get_delimiter = function() {
+      return (private$params_delimeter)
+    },
+
+    set_delimiter = function(value) {
+      if (!missing(value)) {
+        if (class(value) == 'character' && nchar(value) == 1) {
+          private$params_delimeter <- value
+          invisible(self)
+        }else{
+          stop("Delimiter should be single character")
+        }
+
+      }else{
+        stop("Delimiter cannot be empty")
+      }
+    },
+
+    qry_add = function(sname,sqry,sparam) {
+      if (!missing(sname) && !missing(sqry)) {
+        if (missing(sparam)) {
+          if (stringr::str_detect(sqry,"@")) {
+            stop("Missing parameters")
+          }else{
+            private$qry_run_self_sql(
+              paste0(
+                "insert into stored_queries (qry_name,qry_sql) values ('",
+                sname, "','",
+                sqry,  "')"
+              )
+            )
+            invisible(self)
+          }#@
+        }else{
+          private$qry_run_self_sql(
+            paste0(
+              "insert into stored_queries (qry_name,qry_sql,qry_params) values ('",
+              sname, "','",
+              sqry,  "','" ,
+              sparam,"')"
+            )
+          )
+          invisible(self)
+        }
+      }else{
+        stop("Missing query name or sql statement")
+      }#missing
+    },#function
+
+    qry_update = function(sname,sqry,sparam) {
+      if (!missing(sname)) {
+        if (missing(sparam) && !missing(sqry)) {
+          private$qry_run_self_sql(
+            paste0(
+              " update stored_queries set ",
+              " qry_sql='",sqry, "' where ",
+              " qry_name='",sname,"';"
+            )
+          )
+          invisible(self)
+
+        }else if (!missing(sparam) && missing(sqry)) {
+          private$qry_run_self_sql(
+            paste0(
+              " update stored_queries set ",
+              " qry_params='",sparam, "' where ",
+              " qry_name='",sname,"';"
+            )
+          )
+          invisible(self)
+
+        }else if (!missing(sparam) && !missing(sqry)) {
+          private$qry_run_self_sql(
+            paste0(
+              " update stored_queries set ",
+              " qry_sql='",sqry, "', ",
+              " qry_params='",sparam,  "' where ",
+              " qry_name='",sname,"';"
+            )
+          )
+          invisible(self)
+
+        }else{
+          stop("Missing sql statement or parameters")
+        }#missing
+      }else{
+        stop("Missing stored query name")
+      }
+    },#function
+
+    qry_delete = function(value) {
+      if (!missing(value)) {
+        private$qry_run_self_sql(paste0("delete from stored_queries where qry_name='",value,"';"))
+        invisible(self)
+      }else{
+        stop("Please supply Query name")
+      }
+    },
+
+    qry_list = function() {
+      private$qry_run_self_sql("select qry_name from stored_queries order by qry_name")
+    },
+
+    qry_exists = function(value) {
+      temp <- private$qry_run_self_sql(
+        paste0(
+          "select count(qry_name) as scount from stored_queries where qry_name='",value,"'"
+        )
+      )
+      return(as.numeric(temp["scount"]) > 0)
+    },
+
+    tqry_exec = function(value) {
+      if (!missing(value)) {
+        private$qry_run_target_sql(value)
+      }else{
+        stop("Please supply sql statement")
+      }
+
+    },
+
+    table_import = function(src,dst,tbl) {
+      dbh <- RODBC::odbcDriverConnect(src)
+
+      src_table <- RODBC::sqlQuery(dbh,paste0("select * from ",tbl))
+      dst_db <- RSQLite::dbConnect(RSQLite::SQLite(), dbname = dst)
+      RSQLite::dbWriteTable(conn = dst_db, name = tbl, value = src_table)
+
+      RODBC::close(dbh)
+    },
+
+    tables_list = function() {
+      tbls <- private$qry_run_target_sql(paste0("SELECT name FROM sqlite_master WHERE type = 'table'"))
+      return(tbls)
+    },
+
+    tables_count = function() {
+      tbls <- self$tables_list()
+      return(nrow(tbls))
+    },
+
+    table_get_records = function(tname,n,top = TRUE,where=NULL) {
+      if (!missing(tname)) {
+        temp <- NULL
+        if(is.null(where)){
+           temp <- private$qry_run_target_sql(paste0("select * from ",tname))
+        }else{
+          temp <- private$qry_run_target_sql(
+                     paste0(
+                        "select * from ",tname,
+                        " where ",where
+                     )
+                  )
+        }
+        if (!missing(n)) {
+          if (top) {
+            return(head(temp,n))
+          }else{
+            return(tail(temp,n))
+          }
+        }
+        return(temp)
+      }else{
+        stop("Please supply the table name")
+      }
+    },
+
+    table_head = function(tname, n = 10,where=NULL) {
+      temp <- self$table_all(tname,where = where)
+      if (nrow(temp) > 0) {
+        return(head(temp,n = n))
+      }else{
+        return(temp)
+      }
+    },
+
+    table_tail = function (tname,n = 10,where=NULL) {
+      temp <- self$table_all(tname,where = where)
+      if (nrow(temp) > 0) {
+        return(tail(temp,n = n))
+      }else{
+        return(temp)
+      }
+    },
+
+    table_split_name = function(tname) {
+      temp <- tname
+      if (stringr::str_detect(tname,"::")) {
+        temp <- stringr::str_split(tname,"::")[[1]]
+      }
+      return(temp)
+    },
+
+    table_all = function(tname,where=NULL) {
+      if (!missing(tname)) {
+        return(self$table_get_records(tname = tname,where=where))
+      }else{
+        stop("Please supply table name")
+      }
+    },
+
+    table_info = function(tname) {
+      if (!missing(tname)) {
+        return(private$qry_run_target_sql(paste0(
+          "PRAGMA table_info('",tname,"')"
+        )))
+
+      }else{
+        stop("Please supply the table name")
+      }
+    },
+
+    table_add = function(tname,data) {
+      self$table_create(tname,df = data)
+    },
+
+
+    table_create = function (tname,df) {
+      RSQLite::dbWriteTable(
+        conn = RSQLite::dbConnect(RSQLite::SQLite(), dbname = self$target_db),
+        name = tname,
+        value = df
+      )
+
+    },
+
+    table_update = function(tname,set,where){
+
+      if (!missing(tname) && !missing(set) && !missing(where)) {
+
+
+        qry <- paste0(
+            " update ", tname,
+            " set    ", set,
+            " where  ", where
+        )
+
+        private$qry_run_target_sql(qry)
+
+        invisible(self)
+      }else{
+        stop(" Missing parameter(s): tname/set/where")
+      }
+    },
+
+    table_insert = function(tname,fields,values){
+
+      if (!missing(tname) && !missing(fields) && !missing(values)) {
+        qry <- paste0(
+          " insert into ", tname,
+          " (", fields,")",
+          " values (", values,")"
+        )
+
+        private$qry_run_target_sql(qry)
+        #cat(qry)
+        invisible(self)
+      }else{
+        stop(" Missing parameter(s): tname/fields/values")
+      }
+    },
+
+
+
+    table_select = function(tname,fields=" * ",where,n){
+
+      if (!missing(tname)) {
+
+        temp_where <-""
+        if( !missing(where)){
+          temp_where <- paste0(" where ",where)
+        }
+
+        temp_n <- ""
+        if(!missing(n)){
+
+          temp_n <- paste0(" limit ",n)
+        }
+
+        qry <- paste0(
+          " select ",fields," from ", tname, temp_where, temp_n
+        )
+
+        return (
+            private$qry_run_target_sql(qry)
+        )
+        #cat(qry)
+      }else{
+        stop(" Missing parameter(s): tname")
+      }
+    }
+
+
+  ,qrys_db = function() {
+      private$get_db()
+  }
+
+  ,target_db = function() {
+      private$get_db()
+   }
+),#public
+
+  private = list(
+    params_delimeter = "," ,
+
+    qry_get = function() {
+      if (!is.null(self$name)) {
+        private$run_sql(paste0(
+          "select * from stored_queries where qry_name='", self$name ,"'"
+        ))
+      }else{
+        return(NULL)
+      }#if
+    },#function
+
+    qry_run_target_sql = function(value) {
+      private$run_sql(value)
+    },
+
+    qry_run_self_sql = function(value) {
+      private$run_sql(value)
+    },
+
+    qry_create_self_table = function() {
+      qry_ddl <- "
+      CREATE TABLE stored_queries (
+      id    INTEGER      PRIMARY KEY AUTOINCREMENT NOT NULL,
+      qry_name           VARCHAR (50),
+      qry_params         TEXT,
+      qry_sql            TEXT,
+      qry_default_values TEXT
+      );
+      "
+
+      checks_sql <-
+        "SELECT count(name) as tcount FROM sqlite_master WHERE type='table' AND name='stored_queries';"
+      private$qry_create_self_db()
+      tcount <- private$qry_run_self_sql(checks_sql)
+
+      if (nrow(tcount) == 0) {
+        ttable <- private$qry_run_self_sql(qry_ddl)
+      }
+
+      invisible(self)
+    },
+
+    qry_create_self_db = function(value = "StoredProcsDB.sqlite") {
+      if (is.null(self$qrys_db)) {
+        db <- RSQLite::dbConnect(RSQLite::SQLite(), dbname = value)
+        self$qrys_db <- value
+      }
+      invisible(self)
+    }
+)
+)
+
+# SQ$new("fx_update_periods")$qry_exec()
+# SQ$new("bts_update_cost_questions")$qry_exec()
+# SQ$new("bts_update_export_captions")$qry_exec()
+

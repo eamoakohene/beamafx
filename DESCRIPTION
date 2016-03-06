@@ -1,0 +1,9 @@
+Package: beamafx
+Type: Package
+Title: Currency exchange rates
+Version: 0.1
+Author: Emmanuel Amoakohene
+Maintainer: <eamokohene@gmail.com>
+Description: Currency exchange rate
+License: GPL-2
+LazyData: TRUE

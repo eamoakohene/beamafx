@@ -304,9 +304,17 @@ fx_series <- R6::R6Class(
       fx_to = NULL,
       dtd1 = NULL,
       dtd2 = NULL,
+      filter_on = FALSE,
 
       initialize = function(code = 'USD,GBP,EUR',to='GBP'){
-        self$set_codes(code)
+
+        my_code <- code
+        if( !(self$str_pos(code,to)) > 0){
+          my_code <- paste0(code,',',to)
+          self$set_filter(TRUE)
+        }
+
+        self$set_codes(my_code)
         self$convert_to(to)
       }
 
@@ -316,6 +324,14 @@ fx_series <- R6::R6Class(
         }
         invisible(self)
       }
+
+      ,set_filter = function(value){
+        if(!missing(value) && !is.null(value)){
+          self$filter_on <- value
+        }
+        invisible(self)
+      }
+
 
       ,convert_to = function(value){
         if(!missing(value) && !is.null(value)){
@@ -478,7 +494,13 @@ fx_series <- R6::R6Class(
                                       )
               my_data <- dplyr::arrange(my_data,data_code,yr,mth,dy)
               my_gather <- dplyr::arrange(my_gather,data_code,yr,mth,dy)
-              my_data$calc_value <- my_gather$calc_value
+              my_data$value <- my_gather$calc_value
+
+              if(self$filter_on){
+                my_data$data_value <- NULL
+                my_data <- dplyr::filter(my_data,!(data_code == self$fx_to))
+              }
+
           }
 
         }
@@ -543,4 +565,8 @@ fx_tbl_head <- function(tbl='fx_data',n=10, where=NULL){
 # fx_series$new('USD,GBP,EUR')$set_date_range('2008/01/01','2016/04/30')$set_freq('y')$get_data()
 #
 # fx_series$new('USD,GBP,EUR',to='USD')$set_date_range('2008/01/01','2016/04/30')$set_freq('y')$get_data()
+# fx_series$new('EUR')$set_date_range('2008/01/01','2016/04/30')$set_freq('y')$get_data()
 
+# The following 2 lines produces the same results
+# fx_series$new('USD',    to='GBP')$set_date_range('2008/01/01','2016/04/30')$set_freq('y')$get_data()
+# fx_series$new('USD,GBP',to='GBP')$set_date_range('2008/01/01','2016/04/30')$set_freq('y')$set_filter(T)$get_data()

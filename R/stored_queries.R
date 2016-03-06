@@ -1,4 +1,3 @@
-#rm(list=ls(all=TRUE))
 
 
 SQ <- R6::R6Class(

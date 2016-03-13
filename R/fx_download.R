@@ -66,26 +66,27 @@ fx_download <- R6::R6Class(
 
         names(my_df) <- c('date','value')
         my_df <- dplyr::filter(my_df,!( trimws(value)=='N/A'))
-        my_df$value <- as.numeric(my_df$value)
 
+        if(nrow(my_df) > 0 ){
+              my_df$value <- as.numeric(my_df$value)
 
+              my_yr <-  substr(my_df$date, my_ext$yr[1], my_ext$yr[2])
+              my_mth <- as.numeric(substr(my_df$date,my_ext$mth[1],my_ext$mth[2]))
+              my_dy <- as.numeric(substr(my_df$date,my_ext$dy[1],my_ext$dy[2]))
 
-        my_yr <-  substr(my_df$date, my_ext$yr[1], my_ext$yr[2])
-        my_mth <- as.numeric(substr(my_df$date,my_ext$mth[1],my_ext$mth[2]))
-        my_dy <- as.numeric(substr(my_df$date,my_ext$dy[1],my_ext$dy[2]))
+              my_value <- my_df$value
 
-        my_value <- my_df$value
+              my_sql <- sprintf ("insert into fx_data (yr,mth,dy,data_value,data_code) values (%s,%s,%s,%s,'%s');", my_yr,my_mth,my_dy,my_value,my_names[j])
+              my_con <-  private$get_db_con()
+              my_rows <- length(my_sql)
 
-        my_sql <- sprintf ("insert into fx_data (yr,mth,dy,data_value,data_code) values (%s,%s,%s,%s,'%s');", my_yr,my_mth,my_dy,my_value,my_names[j])
-        my_con <-  private$get_db_con()
-        my_rows <- length(my_sql)
-
-        for(i in 1:my_rows){
-          RSQLite::dbSendQuery(my_con,my_sql[i])
-          cat(my_names[j]," row ",i," of ",my_rows ,"\n")
+              for(i in 1:my_rows){
+                RSQLite::dbSendQuery(my_con,my_sql[i])
+                cat(my_names[j]," row ",i," of ",my_rows ,"\n")
+              }
+              DBI::dbClearResult(DBI::dbListResults(my_con)[[1]])
+              DBI::dbDisconnect(my_con)
         }
-
-        DBI::dbDisconnect(my_con)
       }
 
       cat('Now filling in the gaps. Please wait .....\n')
@@ -127,25 +128,27 @@ fx_download <- R6::R6Class(
 
         names(my_df) <- c('date','value')
         my_df <- dplyr::filter(my_df,!( trimws(value)=='N/A'))
-        my_df$value <- as.numeric(my_df$value)
 
-        my_yr <-  substr( my_df$date, my_ext$yr[1], my_ext$yr[2])
-        my_mth <- as.numeric( substr( my_df$date, my_ext$mth[1], my_ext$mth[2] ))
-        my_dy <- as.numeric( substr( my_df$date, my_ext$dy[1], my_ext$dy[2] ))
+        if( nrow(my_df)> 0 ){
+            my_df$value <- as.numeric(my_df$value)
 
-        my_value <- my_df$value
+            my_yr <-  substr( my_df$date, my_ext$yr[1], my_ext$yr[2])
+            my_mth <- as.numeric( substr( my_df$date, my_ext$mth[1], my_ext$mth[2] ))
+            my_dy <- as.numeric( substr( my_df$date, my_ext$dy[1], my_ext$dy[2] ))
 
-        my_sql <- sprintf ("insert into fx_data (yr,mth,dy,data_value,data_code) values (%s,%s,%s,%s,'%s');", my_yr,my_mth,my_dy,my_value,my_names[j])
-        my_con <-  private$get_db_con()
-        my_rows <- length(my_sql)
+            my_value <- my_df$value
 
-        for(i in 1:my_rows){
-          RSQLite::dbSendQuery(my_con,my_sql[i])
-          cat(my_names[j]," row ",i," of ",my_rows ,"\n")
+            my_sql <- sprintf ("insert into fx_data (yr,mth,dy,data_value,data_code) values (%s,%s,%s,%s,'%s');", my_yr,my_mth,my_dy,my_value,my_names[j])
+            my_con <-  private$get_db_con()
+            my_rows <- length(my_sql)
+
+            for(i in 1:my_rows){
+              RSQLite::dbSendQuery(my_con,my_sql[i])
+              cat(my_names[j]," row ",i," of ",my_rows ,"\n")
+            }
+            DBI::dbClearResult(DBI::dbListResults(my_con)[[1]])
+            DBI::dbDisconnect(my_con)
         }
-        DBI::dbClearResult(DBI::dbListResults(my_con)[[1]])
-        DBI::dbDisconnect(my_con)
-
       }
       cat('Now filling in the gaps. Please wait .....\n')
       SQ$new("fx_update_periods")$qry_exec()

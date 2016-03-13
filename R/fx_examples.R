@@ -3,6 +3,7 @@
 # fx_tbl_tail(n=15, where = "data_code='GBP'")
 # fx_tbl_head(n=15, where = "data_code='EUR'")
 # fx_download$new()$set_data_points(5000)$update_euro('EUR')
+# fx_download$new()$set_data_points(20)$update_euro_all()
 
 
   # fx_series$new('USD,GBP,EUR')$set_date1('2016/01/01')$set_date2('2016/04/30')$set_freq('m')$get_data()

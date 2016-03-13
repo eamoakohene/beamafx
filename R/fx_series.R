@@ -229,3 +229,71 @@ fx_series <- R6::R6Class(
     }
   )
 )
+
+get_d <- function(
+  fx='EUR',
+  from= as.Date(
+    paste(
+      lubridate::year(Sys.Date()),
+      lubridate::month(Sys.Date())-1,
+      1,sep='-')
+  ),
+
+  to = Sys.Date()
+
+){
+  fx_series$new( paste0( trimws(fx),',GBP') )$set_date_range( from ,to )$set_freq( 'd' )$set_filter(T)$get_data()
+}
+
+get_m <- function(
+     fx='EUR',
+     from= as.Date(
+         paste(
+            lubridate::year(Sys.Date())-1,
+            lubridate::month(Sys.Date()),
+            1,sep='-')
+         ),
+
+     to = Sys.Date()
+
+  ){
+  fx_series$new( paste0( trimws(fx),',GBP') )$set_date_range( from ,to )$set_freq( 'm' )$set_filter(T)$get_data()
+}
+
+get_y <- function(
+  fx='EUR',
+  from= as.Date(
+    paste(
+      lubridate::year(Sys.Date())-10,
+      1,
+      1,sep='-')
+  ),
+
+  to = Sys.Date()
+
+){
+
+  fx_series$new( paste0( trimws(fx),',GBP') )$set_date_range(from,to)$set_freq('y')$set_filter(T)$get_data()
+}
+
+get_last <- function(x=10,fx='EUR',prd = c('d','m','y')){
+
+  today <- Sys.Date()
+  period <- NULL
+
+  if(missing(prd)){
+    period <- 'd'
+  }else{
+    period <- match.arg(prd)
+  }
+
+  from <- switch(period,
+          'd'= today-x,
+          'm'= lubridate::month(today)-x,
+          'y'= lubridate::year(today)-x
+  )
+
+  to <- today
+
+  fx_series$new( paste0( trimws(fx),',GBP') )$set_date_range(from,to)$set_freq( period )$set_filter(T)$get_data()
+}

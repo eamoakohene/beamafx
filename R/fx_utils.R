@@ -5,7 +5,7 @@ fx_utils <- R6::R6Class(
 
     db_name_local ='R:/packages/beamafx/inst/extdata/beamafx.sqlite',
     db_name_pkg = system.file("extdata/beamafx.sqlite",package="beamafx"),
-    local_mode = FALSE,
+    local_mode = TRUE,
 
     initialize = function(){
 

@@ -81,7 +81,8 @@ fx_download <- R6::R6Class(
               my_rows <- length(my_sql)
 
               for(i in 1:my_rows){
-                RSQLite::dbSendQuery(my_con,my_sql[i])
+                RSQLite::dbSendQuery( my_con,my_sql[i] )
+                cat(my_sql[i],"\n")
                 cat(my_names[j]," row ",i," of ",my_rows ,"\n")
               }
               DBI::dbClearResult(DBI::dbListResults(my_con)[[1]])
@@ -139,15 +140,16 @@ fx_download <- R6::R6Class(
             my_value <- my_df$value
 
             my_sql <- sprintf ("insert into fx_data (yr,mth,dy,data_value,data_code) values (%s,%s,%s,%s,'%s');", my_yr,my_mth,my_dy,my_value,my_names[j])
-            my_con <-  private$get_db_con()
+            #my_con <-  private$get_db_con()
             my_rows <- length(my_sql)
 
             for(i in 1:my_rows){
-              RSQLite::dbSendQuery(my_con,my_sql[i])
+              #RSQLite::dbSendQuery(my_con,my_sql[i])
+              private$run_sql(my_sql[i])
               cat(my_names[j]," row ",i," of ",my_rows ,"\n")
             }
-            DBI::dbClearResult(DBI::dbListResults(my_con)[[1]])
-            DBI::dbDisconnect(my_con)
+            #DBI::dbClearResult(DBI::dbListResults(my_con)[[1]])
+            #DBI::dbDisconnect(my_con)
         }
       }
       cat('Now filling in the gaps. Please wait .....\n')

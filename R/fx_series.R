@@ -279,18 +279,12 @@ get_y <- function(
 get_last <- function(x=10,fx='EUR',prd = c('d','m','y')){
 
   today <- Sys.Date()
-  period <- NULL
-
-  if(missing(prd)){
-    period <- 'd'
-  }else{
-    period <- match.arg(prd)
-  }
+  period <- match.arg(prd)
 
   from <- switch(period,
-          'd'= today-x,
-          'm'= lubridate::month(today)-x,
-          'y'= lubridate::year(today)-x
+          'd'= today-x-1,
+          'm'= lubridate::month(today)-x-1,
+          'y'= lubridate::year(today)-x-1
   )
 
   to <- today

@@ -24,11 +24,11 @@ scrap_currency_names <- function(){
   return(my_df)
 }
 
-fx_tbl_tail <- function(tbl='fx_data',n=10, where=NULL){
-  fx_utils$new()$get_sq()$table_tail(tbl,n,where)
+fx_tbl_tail <- function(tbl='fx_data',n=10, where=NULL, order_by= NULL){
+  fx_utils$new()$get_sq()$table_tail(tbl,n,where, order_by= order_by)
 }
-fx_tbl_head <- function(tbl='fx_data',n=10, where=NULL){
-  fx_utils$new()$get_sq()$table_head(tbl,n,where)
+fx_tbl_head <- function(tbl='fx_data',n=10, where=NULL, order_by= NULL){
+  fx_utils$new()$get_sq()$table_head(tbl,n,where, order_by= order_by)
 }
 
 # fx_update_meta_src_euro <- function(){

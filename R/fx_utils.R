@@ -3,15 +3,8 @@ fx_utils <- R6::R6Class(
 
   ,public = list(
 
-    db_name_local ='R:/packages/beamafx/inst/extdata/beamafx.sqlite',
-    db_name_pkg = system.file("extdata/beamafx.sqlite",package="beamafx"),
-    local_mode = TRUE,
 
-    initialize = function(){
-
-    }
-
-    ,get_sq = function(){
+    get_sq = function(){
 
       return(
         storedQry::SQ$new( self$get_db() )
@@ -20,10 +13,10 @@ fx_utils <- R6::R6Class(
 
     ,get_db = function(){
 
-      if( self$local_mode ){
-        return(self$db_name_local)
+      if( private$local_mode ){
+        return(private$db_local)
       }else{
-        return(self$db_name_pkg)
+        return(private$db_pkg)
       }
     }
     ,str_pos = function(x,pattern=","){
@@ -32,6 +25,10 @@ fx_utils <- R6::R6Class(
     }
   )
   ,private = list(
+
+    db_local ='R:/packages/beamafx/inst/extdata/beamafx.sqlite',
+    db_pkg = system.file("extdata/beamafx.sqlite",package="beamafx"),
+    local_mode = TRUE,
 
     get_db_con = function(){
       return(

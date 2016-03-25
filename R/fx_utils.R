@@ -10,6 +10,14 @@ fx_utils <- R6::R6Class(
     initialize = function(){
 
     }
+
+    ,get_sq = function(){
+
+      return(
+        storedQry::SQ$new( self$get_db() )
+      )
+    }
+
     ,get_db = function(){
 
       if( self$local_mode ){

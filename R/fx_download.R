@@ -91,7 +91,7 @@ fx_download <- R6::R6Class(
       }
 
       cat('Now filling in the gaps. Please wait .....\n')
-      SQ$new("fx_update_periods")$qry_exec()
+      self$get_sq()$set_name("fx_update_periods")$qry_exec()
       cat('All done!\n')
 
     }
@@ -153,7 +153,7 @@ fx_download <- R6::R6Class(
         }
       }
       cat('Now filling in the gaps. Please wait .....\n')
-      SQ$new("fx_update_periods")$qry_exec()
+      self$get_sq()$set_name("fx_update_periods")$qry_exec()
       cat('All done!\n')
 
     }

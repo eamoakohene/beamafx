@@ -25,10 +25,10 @@ scrap_currency_names <- function(){
 }
 
 fx_tbl_tail <- function(tbl='fx_data',n=10, where=NULL){
-  SQ$new()$table_tail(tbl,n,where)
+  fx_utils$new()$get_sq()$table_tail(tbl,n,where)
 }
 fx_tbl_head <- function(tbl='fx_data',n=10, where=NULL){
-  SQ$new()$table_head(tbl,n,where)
+  fx_utils$new()$get_sq()$table_head(tbl,n,where)
 }
 
 # fx_update_meta_src_euro <- function(){

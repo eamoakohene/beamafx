@@ -1,6 +1,6 @@
 
 
-# fx_tbl_tail(n=15, where = "data_code='GBP'")
+# fx_tbl_tail(n=15, where = "data_code='GBP'", order_by ='yr,mth,dy')
 # fx_tbl_head(n=15, where = "data_code='EUR'")
 # fx_download$new()$set_data_points(5000)$update_euro('EUR')
 # fx_download$new()$set_data_points(20)$update_euro_all()

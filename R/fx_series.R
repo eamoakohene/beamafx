@@ -16,18 +16,29 @@ fx_series <- R6::R6Class(
     dtd2 = NULL,
     filter_on = FALSE,
 
-    initialize = function(code = 'USD,GBP,EUR',to='GBP'){
+    initialize = function(code = 'USD,GBP,EUR',to='GBP',codes_only=FALSE){
+
+      if(self$is_same(code,to)){
+        cat('Currency FROM and TO are the same ')
+        return(NULL)
+      }
 
       my_code <- code
       if( !(self$str_pos(code,to)) > 0){
-        my_code <- paste0(code,',',to)
-        self$set_filter(TRUE)
+        if(!codes_only){
+          my_code <- paste0(code,',',to)
+          self$set_filter(TRUE)
+        }
       }
 
       self$set_codes(my_code)
       self$convert_to(to)
     }
-
+    ,is_same = function(from,to){
+      return(
+        trimws(toupper(from)) == trimws(toupper(to))
+      )
+    }
     ,set_freq = function(value){
       if(!missing(value) && !is.null(value)){
         self$frq <- value

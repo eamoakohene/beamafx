@@ -245,8 +245,8 @@ get_d <- function(
   fx='EUR',
   from= as.Date(
     paste(
-      lubridate::year(Sys.Date()),
-      lubridate::month(Sys.Date())-1,
+      ifelse( lubridate::month(Sys.Date()) == 1, lubridate::year(Sys.Date()) - 1, lubridate::year(Sys.Date())),
+      ifelse( lubridate::month(Sys.Date()) == 1, 12, lubridate::month(Sys.Date())-1),
       1,sep='-')
   ),
 

@@ -253,7 +253,12 @@ get_d <- function(
   to = Sys.Date()
 
 ){
-  fx_series$new( paste0( trimws(fx),',GBP') )$set_date_range( from ,to )$set_freq( 'd' )$set_filter(T)$get_data()
+  fx_series$
+    new( paste0( trimws(fx),',GBP') )$
+    set_date_range( from ,to )$
+    set_freq( 'd' )$
+    set_filter( T )$
+    get_data()
 }
 
 get_m <- function(
@@ -268,7 +273,12 @@ get_m <- function(
      to = Sys.Date()
 
   ){
-  fx_series$new( paste0( trimws(fx),',GBP') )$set_date_range( from ,to )$set_freq( 'm' )$set_filter(T)$get_data()
+  fx_series$
+    new( paste0( trimws(fx),',GBP') )$
+    set_date_range( from ,to )$
+    set_freq( 'm' )$
+    set_filter( T )$
+    get_data()
 }
 
 get_y <- function(
@@ -284,7 +294,12 @@ get_y <- function(
 
 ){
 
-  fx_series$new( paste0( trimws(fx),',GBP') )$set_date_range(from,to)$set_freq('y')$set_filter(T)$get_data()
+  fx_series$
+    new( paste0( trimws(fx),',GBP') )$
+    set_date_range(from,to)$
+    set_freq( 'y' )$
+    set_filter( T )$
+    get_data()
 }
 
 get_last <- function(x=10,fx='EUR',prd = c('d','m','y')){
@@ -300,5 +315,17 @@ get_last <- function(x=10,fx='EUR',prd = c('d','m','y')){
 
   to <- today
 
-  fx_series$new( paste0( trimws(fx),',GBP') )$set_date_range(from,to)$set_freq( period )$set_filter(T)$get_data()
+  fx_series$new( paste0( trimws(fx),',GBP') )$
+    set_date_range(from,to)$
+    set_freq( period )$
+    set_filter(T)$
+    get_data()
 }
+
+download <- function(days = 31) {
+
+  beamafx::fx_download$new()$
+    set_data_points( days )$
+    update_euro_all()
+}
+

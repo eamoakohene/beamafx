@@ -12,7 +12,7 @@ fx_utils <- R6::R6Class(
     }
 
     ,get_db = function(
-      path='R:/packages/beamafx/inst/extdata/beamafx.sqlite'
+      path='beamafx.sqlite'
     ){
 
       if( private$local_mode ){
@@ -29,7 +29,7 @@ fx_utils <- R6::R6Class(
   ,private = list(
 
 
-    db_pkg = system.file("extdata/beamafx.sqlite",package="beamafx"),
+    db_pkg = system.file("beamafx.sqlite",package="beamafx"),
     local_mode = TRUE,
 
     get_db_con = function(){

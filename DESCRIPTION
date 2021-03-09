@@ -7,3 +7,4 @@ Maintainer: <eamokohene@gmail.com>
 Description: Currency exchange rate
 License: GPL-2
 LazyData: TRUE
+StagedInstall: no

@@ -16,7 +16,7 @@ fx_series <- R6::R6Class(
     dtd2 = NULL,
     filter_on = FALSE,
 
-    initialize = function(code = 'USD,GBP,EUR',to='GBP',codes_only=FALSE){
+    initialize = function (code = 'USD,GBP,EUR',to='GBP',codes_only=FALSE){
 
       if(self$is_same(code,to)){
         cat('Currency FROM and TO are the same ')
@@ -34,19 +34,19 @@ fx_series <- R6::R6Class(
       self$set_codes(my_code)
       self$convert_to(to)
     }
-    ,is_same = function(from,to){
+    ,is_same = function (from,to){
       return(
         trimws(toupper(from)) == trimws(toupper(to))
       )
     }
-    ,set_freq = function(value){
+    ,set_freq = function (value){
       if(!missing(value) && !is.null(value)){
         self$frq <- value
       }
       invisible(self)
     }
 
-    ,set_filter = function(value){
+    ,set_filter = function (value){
       if(!missing(value) && !is.null(value)){
         self$filter_on <- value
       }
@@ -54,14 +54,14 @@ fx_series <- R6::R6Class(
     }
 
 
-    ,convert_to = function(value){
+    ,convert_to = function (value){
       if(!missing(value) && !is.null(value)){
 
         self$fx_to <- value
       }
       invisible(self)
     }
-    ,set_date1 = function(value){
+    ,set_date1 = function (value){
       if(!missing(value) && !is.null(value)){
         my_date <- as.Date(value)
 
@@ -73,7 +73,7 @@ fx_series <- R6::R6Class(
       invisible(self)
     }
 
-    ,set_date2 = function(value){
+    ,set_date2 = function (value){
       if(!missing(value) && !is.null(value)){
         my_date <- as.Date(value)
 
@@ -84,7 +84,7 @@ fx_series <- R6::R6Class(
       }
       invisible(self)
     }
-    ,set_date_range = function(value1,value2){
+    ,set_date_range = function (value1,value2){
 
       if(!missing(value1) && !is.null(value1)){
         self$set_date1(value1)
@@ -95,7 +95,7 @@ fx_series <- R6::R6Class(
       }
       invisible(self)
     }
-    ,set_data_days = function(value){
+    ,set_data_days = function (value){
 
       if(value==1){
         self$dtd1 <- 372 * self$y1 + 31 * self$m1 + self$d1
@@ -104,45 +104,45 @@ fx_series <- R6::R6Class(
       }
       invisible(self)
     }
-    ,set_y1 = function(value){
+    ,set_y1 = function (value){
       if(!missing(value) && !is.null(value)){
         self$y1 <- value
       }
       invisible(self)
     }
-    ,set_y2 = function(value){
+    ,set_y2 = function (value){
       if(!missing(value) && !is.null(value)){
         self$y2 <- value
       }
       invisible(self)
     }
-    ,set_m1 = function(value){
+    ,set_m1 = function (value){
       if(!missing(value) && !is.null(value)){
         self$m1 <- value
       }
       invisible(self)
     }
 
-    ,set_m2 = function(value){
+    ,set_m2 = function (value){
       if(!missing(value) && !is.null(value)){
         self$m2 <- value
       }
       invisible(self)
     }
-    ,set_d1 = function(value){
+    ,set_d1 = function (value){
       if(!missing(value) && !is.null(value)){
         self$d1 <- value
       }
       invisible(self)
     }
-    ,set_d2 = function(value){
+    ,set_d2 = function (value){
       if(!missing(value) && !is.null(value)){
         self$d2 <- value
       }
       invisible(self)
     }
 
-    ,set_codes = function(value){
+    ,set_codes = function (value){
       if(!missing(value) && !is.null(value)){
         self$code <- private$split_str( value )
       }

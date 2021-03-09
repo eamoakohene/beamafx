@@ -34,7 +34,8 @@
 # beamafx::fx_series$new('USD,GBP',to='EUR')$set_date1('2016/01/20')$set_date2('2016/01/31')$set_freq('d')$set_filter(TRUE)$get_data()
 
 # marine coatings
-# beamafx::fx_series$new('EUR',to='GBP')$set_date1('2015/09/20')$set_date2('2015/09/30')$set_freq('d')$set_filter(TRUE)$get_data()
+# x = beamafx::fx_series$new('BRL,CNY,EUR,INR,JPY,USD',to='GBP')$set_date1('2000/01/01')$set_date2('2020/12/31')$set_freq('m')$set_filter(TRUE)$get_data()
+# x = beamafx::fx_series$new('EUR,JPY,USD',to='GBP')$set_date1('2000/01/01')$set_date2('2020/12/31')$set_freq('m')$set_filter(TRUE)$get_data()
 # beamafx::fx_series$new('EUR',to='GBP')$set_date1('2015/11/20')$set_date2('2015/11/30')$set_freq('d')$set_filter(TRUE)$get_data()
 # beamafx::fx_series$new('EUR',to='GBP')$set_date1('2016/01/20')$set_date2('2016/01/31')$set_freq('d')$set_filter(TRUE)$get_data()
 
